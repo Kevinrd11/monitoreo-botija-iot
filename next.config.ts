@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // El proyecto es la raiz de Turbopack: evita que herede un lockfile externo.
+  turbopack: { root: __dirname },
 };
 
 export default nextConfig;
