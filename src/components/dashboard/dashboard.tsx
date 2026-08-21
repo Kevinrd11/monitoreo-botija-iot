@@ -4,6 +4,7 @@ import { AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useTankRealtime } from "@/hooks/use-tank-realtime";
 import { AlertsPanel } from "./alerts-panel";
+import { BrandLogo } from "./brand-logo";
 import { DashboardHeader } from "./dashboard-header";
 import { DeviceCard } from "./device-card";
 import { HistorySection } from "./history-section";
@@ -85,9 +86,20 @@ export function Dashboard() {
 
         <SimulatorPanel />
 
-        <footer className="pb-4 text-center text-xs text-muted-foreground">
-          Sistema de monitoreo con dos sensores digitales. No mide volumen ni detecta
-          sobrellenado: eso requeriria un tercer sensor OVERFLOW.
+        <footer className="flex flex-col items-center gap-3 pb-6 text-center">
+          <div className="flex items-center gap-2.5">
+            <BrandLogo size={26} />
+            <span className="text-xs font-semibold tracking-[0.16em] text-[var(--brand)]">
+              BOTIJA
+              <span className="ml-1.5 font-normal tracking-normal text-[var(--brand-olive)]">
+                Finca Agroturística
+              </span>
+            </span>
+          </div>
+          <p className="max-w-xl text-xs leading-relaxed text-muted-foreground">
+            Sistema de monitoreo con dos sensores digitales. No mide volumen ni detecta
+            sobrellenado: eso requeriria un tercer sensor OVERFLOW.
+          </p>
         </footer>
       </main>
     </div>

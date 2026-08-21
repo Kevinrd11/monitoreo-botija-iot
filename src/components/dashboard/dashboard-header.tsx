@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, Database, Droplet, RefreshCw, Settings } from "lucide-react";
+import { Activity, Database, RefreshCw, Settings } from "lucide-react";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,7 @@ import { useNow } from "@/hooks/use-now";
 import { formatDuration } from "@/lib/format";
 import type { DeviceStatusDTO } from "@/types";
 import type { StreamStatus } from "@/hooks/use-tank-realtime";
+import { BrandLogo } from "./brand-logo";
 import { DEVICE_TONE, TONE } from "./tone";
 import { StatusDot } from "./status-dot";
 
@@ -46,14 +47,18 @@ export function DashboardHeader({
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-4 px-6 py-3.5">
         <div className="flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-[var(--water)]/15 ring-1 ring-[var(--water)]/30">
-            <Droplet className="size-5 text-[var(--water)]" />
-          </div>
+          <BrandLogo size={42} priority />
           <div>
             <h1 className="text-sm leading-none font-bold tracking-[0.16em]">
+              <span className="text-[var(--brand)]">BOTIJA</span>
+              <span className="mx-1.5 text-muted-foreground/50">/</span>
               MONITOREO DE TANQUE
             </h1>
-            <p className="mt-1 text-xs text-muted-foreground">{tankName}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              <span className="text-[var(--brand-olive)]">Finca Agroturística</span>
+              <span className="mx-1.5 text-muted-foreground/50">·</span>
+              {tankName}
+            </p>
           </div>
         </div>
 

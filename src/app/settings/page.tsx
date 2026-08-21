@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, Cable, Database, Radio, Timer } from "lucide-react";
+import { BrandLogo } from "@/components/dashboard/brand-logo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { serverEnv } from "@/config/env";
 import { describePolarity, getSensorPolarity } from "@/config/sensors";
@@ -69,8 +70,19 @@ export default function SettingsPage() {
         Volver al monitoreo
       </Link>
 
-      <h1 className="mt-4 text-2xl font-bold tracking-tight">Configuracion</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
+      <div className="mt-4 flex items-center gap-3">
+        <BrandLogo size={44} />
+        <div>
+          <p className="text-[11px] font-semibold tracking-[0.16em] text-[var(--brand)]">
+            BOTIJA
+            <span className="ml-1.5 font-normal tracking-normal text-[var(--brand-olive)]">
+              Finca Agroturística
+            </span>
+          </p>
+          <h1 className="text-2xl font-bold tracking-tight">Configuracion</h1>
+        </div>
+      </div>
+      <p className="mt-3 text-sm text-muted-foreground">
         Valores efectivos leidos de las variables de entorno. Para modificarlos edite
         <code className="mx-1 rounded bg-muted px-1.5 py-0.5 font-mono text-xs">.env.local</code>
         y reinicie el servidor.

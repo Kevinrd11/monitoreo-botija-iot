@@ -1,4 +1,8 @@
-# Monitoreo de Tanque — Dashboard IoT con ESP8266
+# Botija · Monitoreo de Tanque — Dashboard IoT con ESP8266
+
+<p align="center">
+  <img src="public/botija-logo.png" alt="Botija — Finca Agroturística" width="140">
+</p>
 
 Sistema completo de monitoreo en tiempo real de **un tanque de agua** equipado
 con **dos sensores digitales de nivel** (`LOW` y `HIGH`) conectados a una placa
@@ -455,6 +459,8 @@ Cobertura de las pruebas:
 src/
 ├── app/
 │   ├── api/                 Endpoints REST y canal SSE
+│   ├── icon.png             Favicon (logo de Botija)
+│   ├── apple-icon.png       Icono para iOS
 │   ├── page.tsx             Dashboard (/)
 │   └── settings/            Configuración efectiva (/settings)
 ├── components/
@@ -471,6 +477,7 @@ src/
 ├── services/                TankStateService, AlertService, DeviceService,
 │                            TankService (orquestación)
 └── types/                   Entidades y DTOs compartidos
+public/botija-logo.png       Logo de la marca (círculo recortado, fondo transparente)
 firmware/                    Sketch del ESP8266
 scripts/                     Simulador CLI, migraciones, reset
 tests/                       Suite de pruebas (vitest)
@@ -479,6 +486,22 @@ tests/                       Suite de pruebas (vitest)
 **Regla de oro:** la lógica de negocio vive en `services/` y `domain/`. Los
 componentes React solo consumen DTOs; no contienen condiciones sobre `low`/`high`
 ni conocen el mecanismo de tiempo real.
+
+### Marca
+
+El logo de **Botija — Finca Agroturística** vive en `public/botija-logo.png`,
+recortado a su círculo con el exterior transparente para que se integre igual
+sobre fondo claro u oscuro. Se usa a través del componente
+[`BrandLogo`](src/components/dashboard/brand-logo.tsx) en el header, el pie de
+página y `/settings`, y como favicon (`src/app/icon.png`) e icono de iOS
+(`src/app/apple-icon.png`).
+
+Los dos colores de marca están tomados del propio logo — la terracota de la
+botija y el verde oliva del texto — y se exponen como tokens `--brand` y
+`--brand-olive`, con variantes aclaradas para el tema oscuro. Se usan **solo**
+para la identidad: los colores de estado (rojo, ámbar, verde, violeta) siguen
+siendo exclusivamente semánticos, para que nada compita con la lectura del
+estado del tanque.
 
 ### Preparado para crecer
 

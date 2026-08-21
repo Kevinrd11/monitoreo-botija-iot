@@ -6,9 +6,17 @@ const geistSans = Geist({ variable: "--font-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Monitoreo de Tanque | ESP8266",
+  title: "Botija | Monitoreo de Tanque",
   description:
-    "Dashboard de monitoreo en tiempo real de un tanque de agua con sensores digitales LOW y HIGH sobre ESP8266.",
+    "Dashboard de monitoreo en tiempo real del tanque de agua de la Finca Agroturística Botija, con sensores digitales LOW y HIGH sobre ESP8266.",
+  applicationName: "Botija - Monitoreo de Tanque",
+  openGraph: {
+    title: "Botija | Monitoreo de Tanque",
+    description:
+      "Monitoreo en tiempo real del tanque de agua de la Finca Agroturística Botija.",
+    images: ["/botija-logo.png"],
+    type: "website",
+  },
 };
 
 export const viewport: Viewport = {
