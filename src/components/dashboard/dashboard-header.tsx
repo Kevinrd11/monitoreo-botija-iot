@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, Database, RefreshCw, Settings } from "lucide-react";
+import { Activity, Database, DatabaseZap, RefreshCw, Settings } from "lucide-react";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,8 @@ import { StatusDot } from "./status-dot";
 
 interface DashboardHeaderProps {
   tankName: string;
+  /** Persistencia en uso; "memory" se advierte de forma visible. */
+  storage?: "postgres" | "memory";
   device: DeviceStatusDTO | null;
   streamStatus: StreamStatus;
   lastReadingAt: string | null;
@@ -28,6 +30,7 @@ const STREAM_LABEL: Record<StreamStatus, string> = {
 
 export function DashboardHeader({
   tankName,
+  storage,
   device,
   streamStatus,
   lastReadingAt,
@@ -63,6 +66,16 @@ export function DashboardHeader({
         </div>
 
         <div className="ml-auto flex flex-wrap items-center gap-2">
+          {storage === "memory" && (
+            <span
+              title="Sin base de datos: el historial y los avisos no sobreviven a un reinicio y pueden diferir entre instancias."
+              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--status-warning)]/40 bg-[var(--status-warning)]/10 px-3 py-1.5 text-xs font-semibold text-[var(--status-warning)]"
+            >
+              <DatabaseZap className="size-3.5" />
+              MODO DEMO · sin base de datos
+            </span>
+          )}
+
           <span
             className={cn(
               "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold",

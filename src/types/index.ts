@@ -167,6 +167,12 @@ export interface TankOverviewDTO {
   device: DeviceStatusDTO;
   activeAlerts: AlertDTO[];
   serverTime: string;
+  /**
+   * Persistencia en uso. "memory" significa que el historial y los avisos no
+   * sobreviven a un reinicio y pueden diferir entre instancias: la interfaz
+   * debe advertirlo para que nadie confie en el panel como registro fiable.
+   */
+  storage: "postgres" | "memory";
 }
 
 export type HistoryRange = "1h" | "6h" | "24h" | "7d";

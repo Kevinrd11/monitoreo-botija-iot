@@ -31,6 +31,7 @@ export function Dashboard() {
 
       <DashboardHeader
         tankName={overview?.tank.name ?? "Cargando..."}
+        storage={overview?.storage}
         device={device}
         streamStatus={streamStatus}
         lastReadingAt={reading?.timestamp ?? null}

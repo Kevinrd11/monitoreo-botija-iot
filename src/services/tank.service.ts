@@ -205,6 +205,7 @@ export function createTankService(repos: Repositories = getRepositories()) {
         device,
         activeAlerts,
         serverTime: now.toISOString(),
+        storage: repos.driver,
       };
     },
 
