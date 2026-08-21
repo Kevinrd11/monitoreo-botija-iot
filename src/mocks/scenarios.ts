@@ -28,43 +28,47 @@ export interface Scenario {
 export const SCENARIOS: Record<ScenarioId, Scenario> = {
   low: {
     id: "low",
-    label: "NIVEL BAJO",
-    description: "LOW=OFF, HIGH=OFF. El agua esta por debajo del sensor LOW.",
+    label: "RESERVA CRÍTICA",
+    description:
+      "LOW=OFF, HIGH=OFF. La reserva cayó bajo el mínimo: riesgo de desabastecimiento.",
     frames: [{ low: false, high: false }],
     expectedState: "LOW",
   },
   rising: {
     id: "rising",
-    label: "NIVEL MEDIO",
-    description: "LOW=ON, HIGH=OFF. El agua alcanzo LOW pero no HIGH.",
+    label: "RESERVA PARCIAL",
+    description:
+      "LOW=ON, HIGH=OFF. La reserva supera el mínimo pero no el nivel de seguridad.",
     frames: [{ low: true, high: false }],
     expectedState: "MEDIUM",
   },
   full: {
     id: "full",
-    label: "TANQUE LLENO",
-    description: "LOW=ON, HIGH=ON. El agua alcanzo ambos sensores.",
+    label: "RESERVA COMPLETA",
+    description: "LOW=ON, HIGH=ON. Abastecimiento asegurado.",
     frames: [{ low: true, high: true }],
     expectedState: "FULL",
   },
   anomaly: {
     id: "anomaly",
-    label: "ANOMALIA",
-    description: "LOW=OFF, HIGH=ON. Combinacion fisicamente inconsistente.",
+    label: "FALLO DE SENSORES",
+    description:
+      "LOW=OFF, HIGH=ON. Combinación imposible: la reserva deja de ser evaluable.",
     frames: [{ low: false, high: true }],
     expectedState: "ANOMALY",
   },
   offline: {
     id: "offline",
-    label: "DISPOSITIVO OFFLINE",
-    description: "El dispositivo deja de enviar lecturas.",
+    label: "SIN SUPERVISIÓN",
+    description: "El dispositivo deja de reportar y la reserva queda a ciegas.",
     frames: [],
     expectedState: null,
   },
   cycle: {
     id: "cycle",
-    label: "CICLO DE LLENADO",
-    description: "Recorre BAJO -> MEDIO -> LLENO -> MEDIO de forma continua.",
+    label: "CICLO DE CONSUMO",
+    description:
+      "Recorre crítica → parcial → completa → parcial, como un día de la finca.",
     frames: [
       { low: false, high: false },
       { low: true, high: false },

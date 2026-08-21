@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMockDevice } from "@/hooks/use-mock-device";
 import { cn } from "@/lib/utils";
+import { useNow } from "@/hooks/use-now";
 import { formatRelative } from "@/lib/format";
 import type { ScenarioId } from "@/mocks/scenarios";
 import { StatusDot } from "./status-dot";
@@ -21,12 +22,15 @@ const SCENARIO_TONE: Record<string, string> = {
 /**
  * Herramienta de desarrollo: reemplaza al ESP8266.
  *
- * Cada boton envia exactamente el mismo JSON que enviara la placa real por
- * POST /api/tank/readings, de modo que el dashboard reacciona igual que en
- * produccion. Se oculta cuando MOCK_ESP8266_ENABLED=false.
+ * Permite ensayar cada situacion de riesgo — incluido el desabastecimiento —
+ * sin esperar a que ocurra en la finca. Cada boton envia exactamente el mismo
+ * JSON que enviara la placa real por POST /api/tank/readings, de modo que el
+ * panel reacciona igual que en produccion.
+ * Se oculta cuando MOCK_ESP8266_ENABLED=false.
  */
 export function SimulatorPanel() {
   const { enabled, scenarios, status, busy, send, start, stop } = useMockDevice();
+  const now = useNow();
 
   if (!enabled) return null;
 
@@ -36,21 +40,22 @@ export function SimulatorPanel() {
         <div>
           <CardTitle className="flex items-center gap-2 text-sm font-semibold tracking-[0.14em]">
             <FlaskConical className="size-4 text-muted-foreground" />
-            SIMULADOR ESP8266
+            ENSAYO DE ESCENARIOS
           </CardTitle>
           <p className="mt-1 text-xs text-muted-foreground">
-            Solo desarrollo. Inyecta lecturas por el mismo endpoint que usara la placa real.
+            Solo desarrollo. Reproduce situaciones de la finca por el mismo endpoint que
+            usará la placa real.
           </p>
         </div>
 
         <div className="flex items-center gap-3 text-xs">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-3 py-1.5">
             <StatusDot tone={status?.running ? "ok" : "idle"} pulse={status?.running} size="sm" />
-            {status?.running ? "Envio automatico activo" : "Detenido"}
+            {status?.running ? "Simulación en curso" : "Detenido"}
           </span>
-          {status?.lastSentAt && (
+          {status?.lastSentAt && now && (
             <span className="hidden font-mono text-muted-foreground sm:inline">
-              ultimo envio {formatRelative(status.lastSentAt)} · {status.sentCount} totales
+              última lectura {formatRelative(status.lastSentAt, now)} · {status.sentCount} en total
             </span>
           )}
         </div>
@@ -91,7 +96,7 @@ export function SimulatorPanel() {
                   className="flex-1"
                 >
                   <Square className="size-3.5" />
-                  Desconectar
+                  Cortar enlace
                 </Button>
               ) : (
                 <>

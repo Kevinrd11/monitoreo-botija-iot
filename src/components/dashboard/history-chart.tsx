@@ -15,20 +15,23 @@ import type { HistoryRange, ReadingDTO } from "@/types";
 import { STATE_TONE, TONE } from "./tone";
 
 /**
- * Grafico escalonado del historial de estados.
+ * Grafico escalonado del historial de la reserva.
  *
- * Se usa una escala ORDINAL (0=BAJO, 1=MEDIO, 2=LLENO, 3=ANOMALIA) y una
- * interpolacion "stepAfter": el estado se mantiene hasta que llega una lectura
- * nueva. Deliberadamente NO se dibuja una curva continua de porcentaje, porque
- * el sistema no dispone de esa medicion.
+ * Escala ORDINAL (0=critica, 1=parcial, 2=completa, 3=fallo) con interpolacion
+ * "stepAfter": el estado se mantiene hasta que llega una lectura nueva.
+ * Deliberadamente NO se dibuja una curva continua de porcentaje: el sistema no
+ * mide volumen, y una linea suave sugeriria una precision inexistente.
+ *
+ * Leido de izquierda a derecha, muestra con que frecuencia la finca se acerca
+ * al desabastecimiento y cuanto tarda en recuperarse.
  */
 
 const Y_TICKS = [0, 1, 2, 3];
 const TICK_LABEL: Record<number, string> = {
-  0: "BAJO",
-  1: "MEDIO",
-  2: "LLENO",
-  3: "ANOMALIA",
+  0: "CRÍTICA",
+  1: "PARCIAL",
+  2: "COMPLETA",
+  3: "FALLO",
 };
 
 interface Point {
@@ -62,7 +65,7 @@ export function HistoryChart({
   if (data.length === 0) {
     return (
       <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
-        No hay lecturas en este rango.
+        No hay lecturas de la reserva en este rango.
       </div>
     );
   }

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ALERT_TYPE_META } from "@/domain/alert";
 import { type AlertFilter, useAlerts } from "@/hooks/use-alerts";
+import { useNow } from "@/hooks/use-now";
 import { formatDateTime, formatRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { AlertDTO } from "@/types";
@@ -19,7 +20,7 @@ const FILTERS: Array<{ id: AlertFilter; label: string }> = [
   { id: "ALL", label: "Todas" },
 ];
 
-/** Panel de alertas con reconocimiento, resolucion y filtrado. */
+/** Avisos de riesgo: reconocimiento, resolucion y filtrado. */
 export function AlertsPanel({ version }: { version: number }) {
   const [filter, setFilter] = useState<AlertFilter>("OPEN");
   const { alerts, loading, pendingId, acknowledge, resolve } = useAlerts(filter, version);
@@ -31,7 +32,7 @@ export function AlertsPanel({ version }: { version: number }) {
       <CardHeader className="flex flex-row items-center justify-between gap-3 border-b border-border/70 px-5 py-4">
         <CardTitle className="flex items-center gap-2 text-sm font-semibold tracking-[0.14em]">
           <BellRing className="size-4 text-muted-foreground" />
-          PANEL DE ALERTAS
+          AVISOS DE RIESGO
           {filter === "OPEN" && openCount > 0 && (
             <span className="rounded-full bg-[var(--status-critical)] px-2 py-0.5 text-[10px] font-bold text-white tabular-nums">
               {openCount}
@@ -65,11 +66,13 @@ export function AlertsPanel({ version }: { version: number }) {
           <div className="flex flex-col items-center gap-2 px-5 py-10 text-center">
             <ShieldCheck className="size-8 text-[var(--status-ok)]" />
             <p className="text-sm font-medium">
-              {filter === "OPEN" ? "Sin alertas activas" : "No hay alertas en este filtro"}
+              {filter === "OPEN"
+                ? "Sin riesgos activos"
+                : "No hay avisos en este filtro"}
             </p>
             <p className="max-w-sm text-xs text-muted-foreground">
-              El sistema abre alertas automaticamente ante nivel bajo sostenido,
-              inconsistencia de sensores o perdida de comunicacion.
+              El sistema avisa por sí solo si la reserva baja del mínimo de seguridad,
+              si los sensores fallan o si deja de haber supervisión.
             </p>
           </div>
         ) : (
@@ -103,6 +106,7 @@ function AlertRow({
   onAcknowledge: () => void;
   onResolve: () => void;
 }) {
+  const now = useNow();
   const meta = ALERT_TYPE_META[alert.type];
   const tone = SEVERITY_TONE[alert.severity];
   const classes = TONE[tone];
@@ -135,8 +139,9 @@ function AlertRow({
         <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{alert.message}</p>
 
         <p className="mt-1.5 font-mono text-[11px] text-muted-foreground">
-          {formatDateTime(alert.createdAt)} · {formatRelative(alert.createdAt)}
-          {alert.resolvedAt && ` · resuelta ${formatRelative(alert.resolvedAt)}`}
+          {formatDateTime(alert.createdAt)}
+          {now && ` · ${formatRelative(alert.createdAt, now)}`}
+          {now && alert.resolvedAt && ` · resuelta ${formatRelative(alert.resolvedAt, now)}`}
         </p>
       </div>
 

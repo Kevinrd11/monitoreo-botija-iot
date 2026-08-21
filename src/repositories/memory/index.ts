@@ -118,6 +118,18 @@ export function createMemoryRepositories(
       }
       return start;
     },
+    async findPreviousDistinctState(tankId, state) {
+      const previous = [...store.readings]
+        .filter((r) => r.tankId === tankId && r.state !== state)
+        .sort(byTimestampDesc)[0];
+      return previous?.state ?? null;
+    },
+    async findLastOccurrence(tankId, state) {
+      const last = [...store.readings]
+        .filter((r) => r.tankId === tankId && r.state === state)
+        .sort(byTimestampDesc)[0];
+      return last?.timestamp ?? null;
+    },
   };
 
   const alerts: AlertRepository = {

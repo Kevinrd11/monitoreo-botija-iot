@@ -17,7 +17,7 @@ import type { TankStateSnapshot } from "@/types";
  *   LOW=true  HIGH=true  -> FULL     El agua alcanzo ambos sensores.
  *   LOW=false HIGH=true  -> ANOMALY  Combinacion fisicamente imposible.
  *
- * IMPORTANTE: HIGH=true significa "TANQUE LLENO", nunca "sobrellenado".
+ * IMPORTANTE: HIGH=true significa "RESERVA COMPLETA", nunca "sobrellenado".
  * Con solo dos sensores no existe informacion suficiente para afirmar que el
  * agua supero el sensor HIGH. La deteccion de sobrellenado requeriria un
  * tercer sensor (OVERFLOW) y no esta implementada.
@@ -47,6 +47,7 @@ export const TankStateService = {
       label: meta.label,
       shortLabel: meta.shortLabel,
       message: meta.message,
+      action: meta.action,
       emoji: meta.emoji,
       fillRatio: meta.fillRatio,
       tone: meta.tone,

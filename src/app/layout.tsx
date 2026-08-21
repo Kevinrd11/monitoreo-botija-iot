@@ -6,14 +6,14 @@ const geistSans = Geist({ variable: "--font-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Botija | Monitoreo de Tanque",
+  title: "Botija | Prevención de Desabastecimiento de Agua",
   description:
-    "Dashboard de monitoreo en tiempo real del tanque de agua de la Finca Agroturística Botija, con sensores digitales LOW y HIGH sobre ESP8266.",
-  applicationName: "Botija - Monitoreo de Tanque",
+    "Sistema IoT que vigila la reserva de agua de la Finca Agroturística Botija y avisa antes de que la finca se quede sin suministro. Dos sensores digitales sobre ESP8266.",
+  applicationName: "Botija - Prevención de Desabastecimiento",
   openGraph: {
-    title: "Botija | Monitoreo de Tanque",
+    title: "Botija | Prevención de Desabastecimiento de Agua",
     description:
-      "Monitoreo en tiempo real del tanque de agua de la Finca Agroturística Botija.",
+      "Sistema IoT que avisa antes de que la Finca Agroturística Botija se quede sin agua.",
     images: ["/botija-logo.png"],
     type: "website",
   },

@@ -7,7 +7,7 @@ import type { Repositories } from "@/repositories/types";
 import type { Alert } from "@/types";
 
 export interface AlertServiceOptions {
-  /** Minutos en NIVEL BAJO tras los cuales la alerta escala a CRITICAL. */
+  /** Minutos con la reserva bajo el minimo tras los cuales el aviso escala a CRITICAL. */
   lowLevelCriticalMinutes: number;
   /** Segundos sin lecturas tras los cuales el dispositivo se considera OFFLINE. */
   deviceTimeoutSeconds: number;
@@ -115,7 +115,7 @@ export function createAlertService(
             type: "SENSOR_INCONSISTENCY",
             severity: "CRITICAL",
             message:
-              "El sensor HIGH esta activo mientras LOW esta inactivo. Verifique el sistema de sensores.",
+              "El sensor HIGH está activo mientras LOW está inactivo. Mientras persista, el sistema no puede evaluar la reserva de agua de la finca. Revise el cableado y los sensores.",
           },
           result,
         );
@@ -138,8 +138,8 @@ export function createAlertService(
             type: "LOW_LEVEL",
             severity: sustained ? "CRITICAL" : "WARNING",
             message: sustained
-              ? `El tanque permanece en nivel bajo desde hace ${minutesInLow} minutos. El nivel de agua esta por debajo del sensor LOW.`
-              : "El tanque esta por debajo del sensor LOW.",
+              ? `La reserva lleva ${minutesInLow} minutos por debajo del sensor LOW sin reponerse. Riesgo alto de que la finca se quede sin agua: verifique el suministro de entrada.`
+              : "La reserva bajó del sensor LOW. Reponga agua para evitar el desabastecimiento de la finca.",
           },
           result,
         );
@@ -170,7 +170,7 @@ export function createAlertService(
             deviceId: input.deviceId,
             type: "DEVICE_OFFLINE",
             severity: "CRITICAL",
-            message: `El sistema no ha recibido informacion del dispositivo ${input.deviceId} durante mas de ${options.deviceTimeoutSeconds} segundos.`,
+            message: `Sin datos del dispositivo ${input.deviceId} desde hace más de ${options.deviceTimeoutSeconds} segundos. La reserva de agua está sin supervisión: no es posible detectar un desabastecimiento.`,
           },
           result,
         );

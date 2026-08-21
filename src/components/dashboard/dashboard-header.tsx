@@ -52,12 +52,12 @@ export function DashboardHeader({
             <h1 className="text-sm leading-none font-bold tracking-[0.16em]">
               <span className="text-[var(--brand)]">BOTIJA</span>
               <span className="mx-1.5 text-muted-foreground/50">/</span>
-              MONITOREO DE TANQUE
+              ABASTECIMIENTO DE AGUA
             </h1>
             <p className="mt-1 text-xs text-muted-foreground">
               <span className="text-[var(--brand-olive)]">Finca Agroturística</span>
               <span className="mx-1.5 text-muted-foreground/50">·</span>
-              {tankName}
+              Reserva: {tankName}
             </p>
           </div>
         </div>
@@ -72,7 +72,7 @@ export function DashboardHeader({
             )}
           >
             <StatusDot tone={tone} pulse={device?.status === "ONLINE"} size="sm" />
-            ESP8266 {device?.statusLabel ?? "SIN DATOS"}
+            SUPERVISIÓN {device?.statusLabel ?? "SIN DATOS"}
           </span>
 
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground">
@@ -87,16 +87,16 @@ export function DashboardHeader({
 
           <span className="hidden items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground sm:inline-flex">
             <Database className="size-3.5" />
-            Ultima actualizacion: {elapsed}
+            Última lectura: {elapsed}
           </span>
 
-          <Button variant="ghost" size="icon" onClick={onRefresh} aria-label="Actualizar">
+          <Button variant="ghost" size="icon" onClick={onRefresh} aria-label="Actualizar ahora">
             <RefreshCw className="size-4" />
           </Button>
 
           <Link
             href="/settings"
-            aria-label="Configuracion"
+            aria-label="Configuración"
             className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
           >
             <Settings className="size-4" />

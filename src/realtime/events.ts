@@ -1,4 +1,10 @@
-import type { AlertDTO, DeviceStatusDTO, ReadingDTO, TankStateSnapshot } from "@/types";
+import type {
+  AlertDTO,
+  DeviceStatusDTO,
+  ReadingDTO,
+  SupplyAssessmentDTO,
+  TankStateSnapshot,
+} from "@/types";
 
 export const REALTIME_EVENTS = ["reading", "alerts", "device", "heartbeat"] as const;
 export type RealtimeEventName = (typeof REALTIME_EVENTS)[number];
@@ -6,6 +12,7 @@ export type RealtimeEventName = (typeof REALTIME_EVENTS)[number];
 export interface ReadingEventPayload {
   reading: ReadingDTO;
   state: TankStateSnapshot;
+  supply: SupplyAssessmentDTO;
   device: DeviceStatusDTO;
   activeAlerts: AlertDTO[];
 }
@@ -16,6 +23,8 @@ export interface AlertsEventPayload {
 
 export interface DeviceEventPayload {
   device: DeviceStatusDTO;
+  /** El riesgo depende del enlace: si cae, deja de ser evaluable. */
+  supply: SupplyAssessmentDTO;
 }
 
 export interface HeartbeatEventPayload {

@@ -6,11 +6,12 @@ import type { TankStateSnapshot } from "@/types";
 import { STATE_TONE, TONE } from "./tone";
 
 /**
- * Representacion visual del tanque.
+ * Representacion visual de la reserva de agua.
  *
  * ATENCION: la altura del agua es un RECURSO VISUAL, no una medicion.
- * Con dos sensores digitales no existe informacion de volumen; por eso el
- * tanque se rotula con BAJO / MEDIO / LLENO y nunca con un porcentaje.
+ * Con dos sensores digitales no existe informacion de volumen; por eso la
+ * reserva se rotula como CRITICA / PARCIAL / COMPLETA y nunca con un
+ * porcentaje ni con una autonomia estimada.
  */
 
 const VIEW_W = 302;
@@ -63,7 +64,7 @@ export function TankVisual({ state, low, high, stale = false }: TankVisualProps)
         className="h-[440px] w-full max-w-[360px]"
         role="img"
         aria-label={
-          state ? `Tanque en estado ${state.label}` : "Tanque sin lecturas disponibles"
+          state ? `Reserva de agua: ${state.label}` : "Reserva de agua sin lecturas disponibles"
         }
       >
         <defs>
@@ -213,8 +214,8 @@ export function TankVisual({ state, low, high, stale = false }: TankVisualProps)
       </svg>
 
       <p className="mt-1 max-w-[280px] text-center text-[11px] leading-relaxed text-muted-foreground">
-        Representacion cualitativa. El sistema no mide volumen: solo conoce si el
-        agua alcanza los sensores LOW y HIGH.
+        Representación cualitativa. El sistema no mide volumen ni estima
+        autonomía: solo sabe si el agua alcanza los sensores LOW y HIGH.
       </p>
     </div>
   );

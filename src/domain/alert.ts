@@ -23,13 +23,21 @@ export interface AlertTypeMeta {
 }
 
 export const ALERT_TYPE_META: Record<AlertType, AlertTypeMeta> = {
-  LOW_LEVEL: { type: "LOW_LEVEL", title: "NIVEL BAJO", emoji: "⚠️" },
+  LOW_LEVEL: {
+    type: "LOW_LEVEL",
+    title: "RIESGO DE DESABASTECIMIENTO",
+    emoji: "⚠️",
+  },
   SENSOR_INCONSISTENCY: {
     type: "SENSOR_INCONSISTENCY",
-    title: "ANOMALIA DE SENSOR",
+    title: "FALLO DE SENSORES",
     emoji: "🚨",
   },
-  DEVICE_OFFLINE: { type: "DEVICE_OFFLINE", title: "DISPOSITIVO OFFLINE", emoji: "🔌" },
+  DEVICE_OFFLINE: {
+    type: "DEVICE_OFFLINE",
+    title: "RESERVA SIN SUPERVISIÓN",
+    emoji: "🔌",
+  },
 };
 
 export function isAlertStatus(value: unknown): value is AlertStatus {

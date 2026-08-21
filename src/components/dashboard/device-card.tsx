@@ -10,8 +10,11 @@ import { DEVICE_TONE, TONE } from "./tone";
 import { StatusDot } from "./status-dot";
 
 /**
- * Estado de comunicacion del ESP8266.
- * El contador "hace N segundos" avanza en el cliente entre eventos para que la
+ * Salud del enlace con el ESP8266.
+ *
+ * Importa tanto como el nivel: si el dispositivo deja de reportar, la reserva
+ * queda sin supervision y un desabastecimiento podria pasar inadvertido. El
+ * contador "hace N segundos" avanza en el cliente entre eventos para que la
  * informacion nunca parezca congelada.
  */
 export function DeviceCard({ device }: { device: DeviceStatusDTO | null }) {
@@ -33,7 +36,7 @@ export function DeviceCard({ device }: { device: DeviceStatusDTO | null }) {
         <div className="flex items-center gap-2">
           <Cpu className="size-4 text-muted-foreground" />
           <span className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground">
-            DISPOSITIVO
+            SUPERVISIÓN
           </span>
         </div>
         <StatusDot tone={tone} pulse={online} />
@@ -50,7 +53,7 @@ export function DeviceCard({ device }: { device: DeviceStatusDTO | null }) {
 
       <dl className="mt-3 space-y-1 text-xs text-muted-foreground">
         <div className="flex justify-between gap-2">
-          <dt>Ultima comunicacion</dt>
+          <dt>Última comunicación</dt>
           <dd className="font-mono tabular-nums text-foreground">
             {elapsed === null ? "--" : formatDuration(elapsed)}
           </dd>
@@ -60,7 +63,7 @@ export function DeviceCard({ device }: { device: DeviceStatusDTO | null }) {
           <dd className="font-mono tabular-nums">{formatDateTime(device?.lastSeen ?? null)}</dd>
         </div>
         <div className="flex justify-between gap-2">
-          <dt>Timeout configurado</dt>
+          <dt>Tiempo máximo sin datos</dt>
           <dd className="font-mono tabular-nums">{device?.timeoutSeconds ?? "--"} s</dd>
         </div>
       </dl>

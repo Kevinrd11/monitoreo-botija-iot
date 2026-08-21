@@ -7,12 +7,14 @@ import { getRepositories } from "@/repositories";
 import type { Repositories } from "@/repositories/types";
 import { createAlertService } from "@/services/alert.service";
 import { createDeviceService } from "@/services/device.service";
+import { SupplyService } from "@/services/supply.service";
 import { TankStateService } from "@/services/tank-state.service";
 import type {
   AlertDTO,
   DeviceStatusDTO,
   ReadingDTO,
   ReadingPayload,
+  SupplyAssessmentDTO,
   TankOverviewDTO,
   TankReading,
 } from "@/types";
@@ -27,6 +29,7 @@ export class UnknownDeviceError extends Error {
 export interface IngestResult {
   reading: ReadingDTO;
   state: TankState;
+  supply: SupplyAssessmentDTO;
   device: DeviceStatusDTO;
   activeAlerts: AlertDTO[];
 }
@@ -45,6 +48,39 @@ export function createTankService(repos: Repositories = getRepositories()) {
   async function activeAlertDTOs(tankId: string): Promise<AlertDTO[]> {
     const list = await alerts.listActive(tankId);
     return list.map(toAlertDTO);
+  }
+
+  /**
+   * Evalua el riesgo de desabastecimiento a partir de hechos observados:
+   * estado actual, cuanto lleva en el, tramo anterior y salud del enlace.
+   */
+  async function assessSupply(
+    tankId: string,
+    state: TankState | null,
+    device: DeviceStatusDTO,
+    now: Date,
+    stateSince?: Date | null,
+  ): Promise<SupplyAssessmentDTO> {
+    if (!state) {
+      return SupplyService.assess({ state: null, deviceStatus: device.status, now });
+    }
+
+    const [since, previousDistinctState, lastFullAt] = await Promise.all([
+      stateSince !== undefined
+        ? Promise.resolve(stateSince)
+        : repos.readings.findCurrentStreakStart(tankId, state),
+      repos.readings.findPreviousDistinctState(tankId, state),
+      repos.readings.findLastOccurrence(tankId, "FULL"),
+    ]);
+
+    return SupplyService.assess({
+      state,
+      deviceStatus: device.status,
+      stateSince: since,
+      previousDistinctState,
+      lastFullAt,
+      now,
+    });
   }
 
   return {
@@ -100,18 +136,26 @@ export function createTankService(repos: Repositories = getRepositories()) {
       const deviceStatus = await devices.getStatus(payload.deviceId, reading);
       const readingDTO = toReadingDTO(reading);
       const openAlerts = await activeAlertDTOs(tank.id);
+      const supply = await assessSupply(tank.id, state, deviceStatus, timestamp, stateSince);
 
       publish({
         event: "reading",
         data: {
           reading: readingDTO,
           state: TankStateService.snapshot(state),
+          supply,
           device: deviceStatus,
           activeAlerts: openAlerts,
         },
       });
 
-      return { reading: readingDTO, state, device: deviceStatus, activeAlerts: openAlerts };
+      return {
+        reading: readingDTO,
+        state,
+        supply,
+        device: deviceStatus,
+        activeAlerts: openAlerts,
+      };
     },
 
     /**
@@ -121,6 +165,7 @@ export function createTankService(repos: Repositories = getRepositories()) {
      */
     async refreshDeviceStatus(now: Date = new Date()): Promise<{
       device: DeviceStatusDTO;
+      supply: SupplyAssessmentDTO;
       alertsChanged: boolean;
       activeAlerts: AlertDTO[];
     }> {
@@ -136,24 +181,26 @@ export function createTankService(repos: Repositories = getRepositories()) {
       });
 
       const openAlerts = await activeAlertDTOs(tank.id);
+      const supply = await assessSupply(tank.id, latest?.state ?? null, device, now);
 
       if (evaluation.changed) {
         publish({ event: "alerts", data: { activeAlerts: openAlerts } });
-        publish({ event: "device", data: { device } });
+        publish({ event: "device", data: { device, supply } });
       }
 
-      return { device, alertsChanged: evaluation.changed, activeAlerts: openAlerts };
+      return { device, supply, alertsChanged: evaluation.changed, activeAlerts: openAlerts };
     },
 
     /** Vista agregada para el arranque del dashboard (GET /api/tank). */
     async getOverview(now: Date = new Date()): Promise<TankOverviewDTO> {
       const tank = await getDefaultTank(repos);
       const latest = await repos.readings.findLatest(tank.id);
-      const { device, activeAlerts } = await this.refreshDeviceStatus(now);
+      const { device, supply, activeAlerts } = await this.refreshDeviceStatus(now);
 
       return {
         tank: { id: tank.id, name: tank.name, description: tank.description },
         state: latest ? TankStateService.snapshot(latest.state) : null,
+        supply,
         latestReading: latest ? toReadingDTO(latest) : null,
         device,
         activeAlerts,

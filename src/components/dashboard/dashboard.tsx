@@ -9,8 +9,8 @@ import { DashboardHeader } from "./dashboard-header";
 import { DeviceCard } from "./device-card";
 import { HistorySection } from "./history-section";
 import { SensorCard } from "./sensor-card";
+import { SupplyStatusCard } from "./supply-status-card";
 import { SimulatorPanel } from "./simulator-panel";
-import { TankStateCard } from "./tank-state-card";
 import { TankVisual } from "./tank-visual";
 
 /**
@@ -42,7 +42,8 @@ export function Dashboard() {
           <Card className="flex flex-row items-center gap-3 border-[var(--status-critical)]/40 bg-[var(--status-critical)]/10 p-4">
             <AlertCircle className="size-5 text-[var(--status-critical)]" />
             <p className="text-sm">
-              No se pudo contactar con el backend: <span className="font-mono">{error}</span>
+              Sin conexión con el servidor de supervisión:{" "}
+              <span className="font-mono">{error}</span>
             </p>
           </Card>
         )}
@@ -62,17 +63,20 @@ export function Dashboard() {
           </Card>
 
           <div className="col-span-12 space-y-5 xl:col-span-8">
-            <TankStateCard state={overview?.state ?? null} reading={reading} />
+            <SupplyStatusCard
+              supply={overview?.supply ?? null}
+              state={overview?.state ?? null}
+            />
 
             <div className="grid gap-5 md:grid-cols-3">
               <SensorCard
                 name="LOW"
-                description="Activo cuando el agua alcanza el sensor inferior."
+                description="Marca el mínimo de seguridad. Si se apaga, la finca está en riesgo de quedarse sin agua."
                 active={reading?.low ?? null}
               />
               <SensorCard
                 name="HIGH"
-                description="Activo cuando el agua alcanza el sensor superior."
+                description="Marca la reserva completa. Si está activo, el abastecimiento está asegurado."
                 active={reading?.high ?? null}
               />
               <DeviceCard device={device} />
@@ -96,9 +100,10 @@ export function Dashboard() {
               </span>
             </span>
           </div>
-          <p className="max-w-xl text-xs leading-relaxed text-muted-foreground">
-            Sistema de monitoreo con dos sensores digitales. No mide volumen ni detecta
-            sobrellenado: eso requeriria un tercer sensor OVERFLOW.
+          <p className="max-w-2xl text-xs leading-relaxed text-muted-foreground">
+            Sistema IoT de prevención del desabastecimiento de agua. Trabaja con dos
+            sensores digitales: no mide volumen ni estima autonomía restante, y no detecta
+            sobrellenado — eso requeriría un tercer sensor OVERFLOW.
           </p>
         </footer>
       </main>

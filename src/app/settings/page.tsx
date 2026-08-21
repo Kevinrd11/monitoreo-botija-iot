@@ -9,7 +9,7 @@ import { getRepositories } from "@/repositories";
 export const dynamic = "force-dynamic";
 
 /**
- * Configuracion efectiva del sistema (solo lectura).
+ * Configuracion efectiva del sistema de prevencion (solo lectura).
  * Los valores provienen de variables de entorno; ver .env.example.
  */
 export default function SettingsPage() {
@@ -19,7 +19,7 @@ export default function SettingsPage() {
   const sections = [
     {
       icon: Radio,
-      title: "Dispositivo",
+      title: "Dispositivo de supervisión",
       rows: [
         ["DEVICE_ID", serverEnv.deviceId],
         ["Nombre", serverEnv.deviceName],
@@ -29,10 +29,16 @@ export default function SettingsPage() {
     },
     {
       icon: Timer,
-      title: "Comunicacion y alertas",
+      title: "Umbrales de aviso",
       rows: [
-        ["DEVICE_TIMEOUT_SECONDS", `${serverEnv.deviceTimeoutSeconds} s`],
-        ["LOW_LEVEL_CRITICAL_MINUTES", `${serverEnv.lowLevelCriticalMinutes} min`],
+        [
+          "DEVICE_TIMEOUT_SECONDS",
+          `${serverEnv.deviceTimeoutSeconds} s sin datos → reserva sin supervisión`,
+        ],
+        [
+          "LOW_LEVEL_CRITICAL_MINUTES",
+          `${serverEnv.lowLevelCriticalMinutes} min bajo el mínimo → aviso crítico`,
+        ],
         ["Canal en tiempo real", "Server-Sent Events (/api/tank/stream)"],
       ],
     },
@@ -44,7 +50,7 @@ export default function SettingsPage() {
         ["Sensor HIGH", describePolarity(polarity.highActiveLow)],
         [
           "Nota",
-          "El backend siempre recibe el significado logico (true = el agua alcanza el sensor). La conversion electrica la hace el firmware.",
+          "El backend siempre recibe el significado lógico (true = el agua alcanza el sensor). La conversión eléctrica la hace el firmware.",
         ],
       ],
     },
@@ -54,8 +60,8 @@ export default function SettingsPage() {
       rows: [
         ["Driver activo", driver === "postgres" ? "PostgreSQL" : "En memoria (sin DATABASE_URL)"],
         ["DATABASE_URL", serverEnv.databaseUrl ? "configurada" : "no configurada"],
-        ["Simulador", serverEnv.mockEnabled ? "habilitado" : "deshabilitado"],
-        ["Tanque", serverEnv.tankName],
+        ["Ensayo de escenarios", serverEnv.mockEnabled ? "habilitado" : "deshabilitado"],
+        ["Reserva supervisada", serverEnv.tankName],
       ],
     },
   ];
@@ -67,7 +73,7 @@ export default function SettingsPage() {
         className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="size-4" />
-        Volver al monitoreo
+        Volver a la supervisión
       </Link>
 
       <div className="mt-4 flex items-center gap-3">
@@ -79,11 +85,11 @@ export default function SettingsPage() {
               Finca Agroturística
             </span>
           </p>
-          <h1 className="text-2xl font-bold tracking-tight">Configuracion</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Configuración</h1>
         </div>
       </div>
       <p className="mt-3 text-sm text-muted-foreground">
-        Valores efectivos leidos de las variables de entorno. Para modificarlos edite
+        Valores efectivos leídos de las variables de entorno. Para modificarlos edite
         <code className="mx-1 rounded bg-muted px-1.5 py-0.5 font-mono text-xs">.env.local</code>
         y reinicie el servidor.
       </p>

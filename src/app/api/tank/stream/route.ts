@@ -52,9 +52,10 @@ export async function GET(request: Request) {
       const tick = setInterval(async () => {
         if (closed) return;
         try {
-          // Reconcilia ONLINE/OFFLINE y abre o cierra DEVICE_OFFLINE.
-          const { device } = await service.refreshDeviceStatus();
-          send({ event: "device", data: { device } });
+          // Reconcilia ONLINE/OFFLINE, reevalua el riesgo de desabastecimiento
+          // y abre o cierra DEVICE_OFFLINE.
+          const { device, supply } = await service.refreshDeviceStatus();
+          send({ event: "device", data: { device, supply } });
           send({ event: "heartbeat", data: { serverTime: new Date().toISOString() } });
         } catch (error) {
           console.error("[stream] error en el tick:", error);

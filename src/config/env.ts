@@ -29,7 +29,7 @@ export const serverEnv = {
   /** Nombre del unico tanque monitoreado. */
   tankName: process.env.TANK_NAME?.trim() || "Tanque Principal",
 
-  /** Minutos en NIVEL BAJO tras los cuales la alerta escala a CRITICAL. */
+  /** Minutos con la reserva bajo el minimo tras los cuales el aviso escala a CRITICAL. */
   lowLevelCriticalMinutes: num(process.env.LOW_LEVEL_CRITICAL_MINUTES, 15),
 
   /** Habilita el simulador de ESP8266 y sus endpoints de desarrollo. */

@@ -20,19 +20,19 @@ export const DEVICE_STATUS_META: Record<DeviceStatus, DeviceStatusMeta> = {
     status: "ONLINE",
     label: "ONLINE",
     emoji: "🟢",
-    message: "El dispositivo esta enviando lecturas normalmente.",
+    message: "La reserva está supervisada: el dispositivo envía lecturas con normalidad.",
   },
   OFFLINE: {
     status: "OFFLINE",
     label: "OFFLINE",
     emoji: "🔴",
-    message: "El sistema no ha recibido datos del dispositivo.",
+    message: "Sin datos del dispositivo: la reserva de agua está sin supervisión.",
   },
   UNKNOWN: {
     status: "UNKNOWN",
     label: "SIN DATOS",
     emoji: "⚪",
-    message: "Todavia no se ha recibido ninguna lectura de este dispositivo.",
+    message: "Todavía no se ha recibido ninguna lectura de este dispositivo.",
   },
 };
 

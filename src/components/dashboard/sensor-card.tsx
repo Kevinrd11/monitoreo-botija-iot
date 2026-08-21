@@ -13,8 +13,9 @@ interface SensorCardProps {
 }
 
 /**
- * Indicador de un sensor digital. Se actualiza en cuanto llega una lectura
- * nueva por el canal realtime.
+ * Indicador de un sensor digital de nivel. Son la unica fuente de verdad del
+ * sistema: de estos dos booleanos sale toda la evaluacion del riesgo de
+ * desabastecimiento. Se actualiza en cuanto llega una lectura nueva.
  */
 export function SensorCard({ name, description, active }: SensorCardProps) {
   const tone = active === null ? "idle" : active ? "ok" : "idle";

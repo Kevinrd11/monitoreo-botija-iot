@@ -49,6 +49,13 @@ export interface ReadingRepository {
    * Devuelve null si la ultima lectura no corresponde a ese estado.
    */
   findCurrentStreakStart(tankId: string, state: TankState): Promise<Date | null>;
+  /**
+   * Ultimo estado distinto al indicado. Sirve para derivar la tendencia de la
+   * reserva (si subio o bajo respecto al tramo anterior).
+   */
+  findPreviousDistinctState(tankId: string, state: TankState): Promise<TankState | null>;
+  /** Momento de la ultima lectura registrada con ese estado. */
+  findLastOccurrence(tankId: string, state: TankState): Promise<Date | null>;
 }
 
 export interface AlertQuery {

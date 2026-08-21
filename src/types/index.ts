@@ -1,5 +1,6 @@
 import type { AlertSeverity, AlertStatus, AlertType } from "@/domain/alert";
 import type { DeviceStatus, DeviceType } from "@/domain/device";
+import type { SupplyRisk, SupplyTrend } from "@/domain/supply";
 import type { TankState } from "@/domain/tank-state";
 
 /* ------------------------------------------------------------------ */
@@ -86,9 +87,33 @@ export interface TankStateSnapshot {
   label: string;
   shortLabel: string;
   message: string;
+  action: string;
   emoji: string;
   fillRatio: number;
   tone: string;
+}
+
+/**
+ * Evaluacion del riesgo de desabastecimiento: el proposito del sistema.
+ * No incluye ninguna estimacion de autonomia restante, porque dos sensores
+ * digitales no aportan la informacion necesaria para calcularla.
+ */
+export interface SupplyAssessmentDTO {
+  risk: SupplyRisk;
+  riskLabel: string;
+  riskHeadline: string;
+  riskEmoji: string;
+  riskTone: string;
+  /** Accion recomendada al encargado. Vacio si no hay nada que hacer. */
+  action: string;
+  trend: SupplyTrend;
+  trendLabel: string;
+  trendDescription: string;
+  /** Segundos que lleva la reserva en el estado actual. */
+  secondsInState: number | null;
+  stateSince: string | null;
+  /** Ultima vez que la reserva estuvo completa. */
+  lastFullAt: string | null;
 }
 
 export interface ReadingDTO {
@@ -137,6 +162,7 @@ export interface TankOverviewDTO {
     description: string | null;
   };
   state: TankStateSnapshot | null;
+  supply: SupplyAssessmentDTO;
   latestReading: ReadingDTO | null;
   device: DeviceStatusDTO;
   activeAlerts: AlertDTO[];

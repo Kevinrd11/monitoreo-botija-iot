@@ -1,16 +1,20 @@
-# Botija · Monitoreo de Tanque — Dashboard IoT con ESP8266
+# Botija · Prevención de Desabastecimiento de Agua
 
 <p align="center">
   <img src="public/botija-logo.png" alt="Botija — Finca Agroturística" width="140">
 </p>
 
-Sistema completo de monitoreo en tiempo real de **un tanque de agua** equipado
-con **dos sensores digitales de nivel** (`LOW` y `HIGH`) conectados a una placa
-**ESP8266**.
+Sistema IoT que vigila la **reserva de agua de la finca** y avisa **antes** de
+que se quede sin suministro.
 
-El sistema funciona **hoy, sin hardware**: incluye un simulador que reemplaza a
-la placa. Cuando llegue el ESP8266 real, basta con configurar el WiFi y apuntar
-la placa al endpoint existente — **no hay que reprogramar el frontend**.
+La finca depende de un tanque de reserva. Si se vacía sin que nadie lo note, se
+interrumpe el riego, el ganado y la actividad turística. Este sistema convierte
+dos **sensores digitales de nivel** (`LOW` y `HIGH`) conectados a un **ESP8266**
+en una respuesta accionable: *¿hay riesgo de quedarnos sin agua, y qué hago?*
+
+Funciona **hoy, sin hardware**: incluye un simulador que reemplaza a la placa.
+Cuando llegue el ESP8266 real, basta con configurar el WiFi y apuntarlo al
+endpoint existente — **no hay que reprogramar el frontend**.
 
 ---
 
@@ -21,9 +25,9 @@ la placa al endpoint existente — **no hay que reprogramar el frontend**.
 3. [Instalación](#3-instalación)
 4. [Variables de entorno](#4-variables-de-entorno)
 5. [Base de datos](#5-base-de-datos)
-6. [Ejecutar el dashboard](#6-ejecutar-el-dashboard)
+6. [Ejecutar el panel](#6-ejecutar-el-panel)
 7. [Ejecutar el Mock ESP8266](#7-ejecutar-el-mock-esp8266)
-8. [Probar cada estado](#8-probar-cada-estado)
+8. [Probar cada situación](#8-probar-cada-situación)
 9. [API](#9-api)
 10. [Formato esperado del ESP8266](#10-formato-esperado-del-esp8266)
 11. [Conectar el ESP8266 real](#11-conectar-el-esp8266-real)
@@ -36,28 +40,60 @@ la placa al endpoint existente — **no hay que reprogramar el frontend**.
 
 ## 1. Qué hace el sistema
 
-El sistema **no mide un porcentaje ni un volumen**. Solo conoce el estado de dos
-sensores digitales, y de su combinación deriva exactamente cuatro estados:
+### El dato crudo: dos sensores
 
-| `LOW`  | `HIGH` | Estado    | Significado |
-|--------|--------|-----------|-------------|
-| OFF    | OFF    | 🔴 **NIVEL BAJO** | El agua está por debajo del sensor LOW. |
-| ON     | OFF    | 🟡 **NIVEL MEDIO** | El agua alcanzó LOW pero todavía no HIGH. |
-| ON     | ON     | 🟢 **TANQUE LLENO** | El agua alcanzó ambos sensores. |
-| OFF    | ON     | 🚨 **ANOMALÍA DE SENSOR** | Combinación físicamente imposible. |
+El sistema **no mide porcentaje ni volumen**. Solo conoce el estado de dos
+sensores digitales, y de su combinación deriva exactamente cuatro estados de
+reserva:
 
-> **Sobre el sobrellenado.** Con dos sensores **no existe información suficiente**
-> para afirmar que el tanque está sobrellenado por encima de `HIGH`. Por eso
-> `HIGH = true` significa **TANQUE LLENO** y nunca "sobrellenado". Detectarlo
-> requeriría un tercer sensor `OVERFLOW`, que **no está implementado**.
+| `LOW`  | `HIGH` | Estado de la reserva | Significado para la finca |
+|--------|--------|----------------------|---------------------------|
+| OFF    | OFF    | 🔴 **RESERVA CRÍTICA** | Por debajo del mínimo de seguridad. La finca puede quedarse sin agua. |
+| ON     | OFF    | 🟡 **RESERVA PARCIAL** | Supera el mínimo pero no el nivel de seguridad. |
+| ON     | ON     | 🟢 **RESERVA COMPLETA** | Abastecimiento asegurado. |
+| OFF    | ON     | 🚨 **FALLO DE SENSORES** | Combinación imposible: la reserva no es evaluable. |
 
-El dashboard muestra:
+### La respuesta: riesgo de desabastecimiento
 
-- 💧 Estado actual del tanque y representación visual del nivel.
+Sobre ese dato crudo, el sistema responde a la pregunta que de verdad importa:
+
+| Riesgo | Cuándo | Qué significa |
+|---|---|---|
+| 🟢 **SIN RIESGO** | Reserva completa y enlace sano | Abastecimiento asegurado. |
+| 🟡 **VIGILANCIA** | Reserva parcial | Por debajo del nivel de seguridad; conviene seguir la evolución. |
+| 🔴 **RIESGO DE DESABASTECIMIENTO** | Reserva crítica | La finca puede quedarse sin agua. Hay que reponer. |
+| ⚫ **NO EVALUABLE** | Fallo de sensores, sin supervisión o sin lecturas | El sistema **no puede afirmar** que haya agua. |
+
+Fíjese en la última fila: si el ESP8266 deja de reportar, el riesgo pasa a **no
+evaluable** aunque la última lectura dijera "reserva completa". Ese dato puede
+tener horas y afirmar "sin riesgo" sería engañoso.
+
+Además, a partir de hechos observados, el panel muestra:
+
+- **Cuánto lleva la reserva en el estado actual.**
+- **Tendencia por tramos** — si la reserva sube o baja respecto al tramo anterior.
+- **Cuándo fue la última vez que la reserva estuvo completa.**
+
+### Dos límites deliberados
+
+> **No estima autonomía restante.** No verá "quedan 6 horas de agua". Dos
+> sensores digitales no aportan caudal ni volumen: cualquier cifra de ese tipo
+> sería inventada, y alguien podría confiar en una reserva que no existe.
+> Calcularla exigiría un caudalímetro o un sensor de nivel continuo.
+
+> **No detecta sobrellenado.** `HIGH = true` significa **reserva completa**,
+> nunca "sobrellenado": con dos sensores no hay información para afirmar que el
+> agua superó el sensor HIGH. Requeriría un tercer sensor `OVERFLOW`, que **no
+> está implementado**.
+
+### El panel muestra
+
+- 🚱 **Riesgo de desabastecimiento** y la acción recomendada — el elemento principal.
+- 💧 Estado de la reserva, con representación visual cualitativa.
 - 📡 Estado de cada sensor (`ACTIVO` / `INACTIVO`), actualizado al instante.
-- 🔌 Estado de comunicación del ESP8266 y tiempo desde la última lectura.
-- ⚠️ Panel de alertas activas, con reconocer / resolver / filtrar.
-- 📊 Historial: gráfico escalonado de estados y tabla `Hora | LOW | HIGH | Estado`.
+- 🔌 Salud de la supervisión y tiempo desde la última lectura.
+- ⚠️ Avisos de riesgo activos, con reconocer / resolver / filtrar.
+- 📊 Historial de la reserva: gráfico escalonado y tabla `Hora | LOW | HIGH | Estado`.
 
 ---
 
@@ -88,6 +124,8 @@ hace a través de un único hook (`useTankRealtime`) que encapsula el transporte
 |---|---|
 | **SSE** en vez de WebSockets | El flujo es unidireccional (servidor → navegador), reconecta solo y no requiere infraestructura extra. El hook degrada a *polling* si SSE falla. |
 | **Lógica de estados centralizada** en `TankStateService` | Ningún componente React contiene condiciones sobre `low`/`high`. |
+| **Riesgo separado del estado** (`SupplyService`) | El estado del tanque es el dato crudo; el riesgo de desabastecimiento es la conclusión. Separarlos permite cambiar la política de riesgo sin tocar la lectura de sensores. |
+| **El riesgo depende también del enlace** | Una reserva completa deja de ser fiable si el dispositivo lleva minutos callado. |
 | **Repositorios con dos implementaciones** | PostgreSQL en producción; almacén en memoria si falta `DATABASE_URL`, para que el sistema arranque igualmente. |
 | **`OFFLINE` derivado, no persistido por un cron** | Se calcula desde `lastSeen` en cada consulta, así es correcto aunque el proceso se reinicie. |
 | **Una alerta abierta por tipo** | Índice único parcial en la base de datos; evita inundar el panel mientras la condición persiste. |
@@ -165,7 +203,7 @@ Definición completa en [`src/database/schema.sql`](src/database/schema.sql).
 
 ---
 
-## 6. Ejecutar el dashboard
+## 6. Ejecutar el panel
 
 ```bash
 npm run dev
@@ -173,7 +211,7 @@ npm run dev
 
 Abra <http://localhost:3000>. Rutas disponibles:
 
-- `/` — centro de monitoreo (única pantalla operativa).
+- `/` — centro de supervisión (única pantalla operativa).
 - `/settings` — configuración efectiva, solo lectura.
 
 ---
@@ -184,8 +222,8 @@ Hay **dos simuladores** y ambos usan exactamente el mismo payload que la placa r
 
 ### a) Panel interactivo (dentro del dashboard)
 
-Al final de la página `/` hay un panel **SIMULADOR ESP8266** con un botón por
-escenario. `Enviar` manda una lectura puntual; `Automático` inicia el envío
+Al final de la página `/` hay un panel **ENSAYO DE ESCENARIOS** con un botón por
+situación. `Enviar` manda una lectura puntual; `Automático` inicia el envío
 periódico; `Desconectar` detiene la comunicación.
 
 ### b) Simulador por línea de comandos
@@ -200,19 +238,20 @@ npm run mock -- --once --scenario=low           # una sola lectura
 npm run mock -- --url=http://192.168.1.50:3000  # contra otro servidor
 ```
 
-Escenarios: `low`, `rising`, `full`, `anomaly`, `offline`, `cycle`.
+Escenarios: `low` (reserva crítica), `rising` (parcial), `full` (completa),
+`anomaly` (fallo de sensores), `offline` (sin supervisión), `cycle` (día de consumo).
 
 ---
 
-## 8. Probar cada estado
+## 8. Probar cada situación
 
-| Estado esperado | Simulador (panel) | `curl` |
+| Riesgo esperado | Simulador (panel) | `curl` |
 |---|---|---|
-| 🔴 NIVEL BAJO | `NIVEL BAJO` → Enviar | `{"low":false,"high":false}` |
-| 🟡 NIVEL MEDIO | `NIVEL MEDIO` → Enviar | `{"low":true,"high":false}` |
-| 🟢 TANQUE LLENO | `TANQUE LLENO` → Enviar | `{"low":true,"high":true}` |
-| 🚨 ANOMALÍA | `ANOMALÍA` → Enviar | `{"low":false,"high":true}` |
-| 🔌 DISPOSITIVO OFFLINE | `DISPOSITIVO OFFLINE` → Desconectar | dejar de enviar > `DEVICE_TIMEOUT_SECONDS` |
+| 🔴 RIESGO DE DESABASTECIMIENTO | `RESERVA CRÍTICA` → Enviar | `{"low":false,"high":false}` |
+| 🟡 VIGILANCIA | `RESERVA PARCIAL` → Enviar | `{"low":true,"high":false}` |
+| 🟢 SIN RIESGO | `RESERVA COMPLETA` → Enviar | `{"low":true,"high":true}` |
+| ⚫ NO EVALUABLE (fallo) | `FALLO DE SENSORES` → Enviar | `{"low":false,"high":true}` |
+| ⚫ NO EVALUABLE (a ciegas) | `SIN SUPERVISIÓN` → Cortar enlace | dejar de enviar > `DEVICE_TIMEOUT_SECONDS` |
 
 Ejemplo completo:
 
@@ -223,13 +262,18 @@ curl -X POST http://localhost:3000/api/tank/readings \
 # {"success":true,"state":"MEDIUM", ...}
 ```
 
-Alertas que verá aparecer:
+Avisos que verá aparecer:
 
-- **NIVEL BAJO** (`WARNING`) al entrar en `LOW`; escala a `CRITICAL` tras
-  `LOW_LEVEL_CRITICAL_MINUTES`. Se resuelve sola al subir el nivel.
-- **ANOMALÍA DE SENSOR** (`CRITICAL`) mientras `LOW=OFF` y `HIGH=ON`.
-- **DISPOSITIVO OFFLINE** (`CRITICAL`) al superar el timeout de comunicación;
-  se resuelve sola en cuanto llega una lectura nueva.
+- **RIESGO DE DESABASTECIMIENTO** (`LOW_LEVEL`, `WARNING`) al bajar del sensor
+  LOW; escala a `CRITICAL` si la reserva no se repone en
+  `LOW_LEVEL_CRITICAL_MINUTES`. Se resuelve solo al subir el nivel.
+- **FALLO DE SENSORES** (`SENSOR_INCONSISTENCY`, `CRITICAL`) mientras
+  `LOW=OFF` y `HIGH=ON`.
+- **RESERVA SIN SUPERVISIÓN** (`DEVICE_OFFLINE`, `CRITICAL`) al superar el
+  timeout; se resuelve solo en cuanto llega una lectura nueva.
+
+Los identificadores (`LOW_LEVEL`, `SENSOR_INCONSISTENCY`, `DEVICE_OFFLINE`) son
+el contrato estable de la API; los títulos son lo que lee el encargado.
 
 ---
 
@@ -272,8 +316,31 @@ realtime.
 
 ### `GET /api/tank`
 
-Vista agregada (lo que el dashboard necesita al arrancar): tanque, estado,
-última lectura, dispositivo, alertas activas y hora del servidor.
+Vista agregada (lo que el panel necesita al arrancar): tanque, estado de la
+reserva, **evaluación del riesgo**, última lectura, dispositivo, avisos activos
+y hora del servidor.
+
+```jsonc
+{ "success": true,
+  "data": {
+    "state": { "state": "LOW", "label": "RESERVA CRÍTICA",
+               "action": "Reponga agua cuanto antes y revise el suministro de entrada." },
+    "supply": {
+      "risk": "CRITICAL",
+      "riskLabel": "RIESGO DE DESABASTECIMIENTO",
+      "riskHeadline": "La finca puede quedarse sin agua",
+      "trend": "FALLING", "trendLabel": "EN DESCENSO",
+      "secondsInState": 1800,
+      "lastFullAt": "2026-08-20T14:05:00.000Z"
+    },
+    "device": { "status": "ONLINE", ... },
+    "activeAlerts": [ ... ]
+  } }
+```
+
+`supply.risk` es `SECURE | WATCH | CRITICAL | UNKNOWN`.
+`supply.trend` es `RISING | FALLING | STABLE | UNKNOWN`.
+**No existe ningún campo de autonomía restante**, por diseño.
 
 ### `GET /api/tank/latest`
 
@@ -439,6 +506,9 @@ Cobertura de las pruebas:
 
 - **Lógica de estados** — las cuatro combinaciones `LOW`/`HIGH`, y que `FULL`
   nunca se presente como sobrellenado.
+- **Riesgo de desabastecimiento** — derivación desde estado y enlace, que una
+  reserva completa deje de ser fiable con el dispositivo caído, tendencia por
+  tramos, y que **ningún texto prometa autonomía restante**.
 - **Validación del payload** — booleanos, `deviceId`, `timestamp` opcional.
 - **Creación de alertas** — apertura, no duplicación, escalado a `CRITICAL`,
   resolución automática, reconocer / resolver manualmente.
@@ -468,14 +538,14 @@ src/
 │   └── ui/                  Primitivas shadcn/ui
 ├── config/                  Variables de entorno y polaridad de sensores
 ├── database/                Pool, esquema SQL, migraciones, bootstrap
-├── domain/                  Tipos y reglas puras (estados, alertas, dispositivo)
+├── domain/                  Tipos y reglas puras (reserva, riesgo, alertas, dispositivo)
 ├── hooks/                   useTankRealtime, useTankHistory, useAlerts, ...
 ├── lib/                     Serializadores, validación (zod), formato, utils
 ├── mocks/                   MockESP8266, escenarios, runner embebido
 ├── realtime/                Bus de eventos y contratos de los eventos
 ├── repositories/            Interfaces + implementaciones PostgreSQL / memoria
-├── services/                TankStateService, AlertService, DeviceService,
-│                            TankService (orquestación)
+├── services/                TankStateService, SupplyService, AlertService,
+│                            DeviceService, TankService (orquestación)
 └── types/                   Entidades y DTOs compartidos
 public/botija-logo.png       Logo de la marca (círculo recortado, fondo transparente)
 firmware/                    Sketch del ESP8266
@@ -505,10 +575,12 @@ estado del tanque.
 
 ### Preparado para crecer
 
-La interfaz actual está diseñada específicamente para **1 tanque + 1 ESP8266 +
+La interfaz actual está diseñada específicamente para **1 reserva + 1 ESP8266 +
 2 sensores** y no incluye rutas de dispositivos, tanques ni usuarios. La
 arquitectura interna, en cambio, ya soporta la extensión: las tablas llevan
 `tank_id`/`device_id`, los repositorios reciben el tanque como parámetro y el
 bus de eventos puede sustituirse por Redis o `LISTEN/NOTIFY` sin tocar el resto
 del sistema. Añadir un tercer sensor `OVERFLOW` implicaría un nuevo estado en
-`src/domain/tank-state.ts` y su regla en `TankStateService` — nada más.
+`src/domain/tank-state.ts` y su regla en `TankStateService` — nada más. Y si
+algún día se instala un caudalímetro, la estimación de autonomía restante
+encajaría en `SupplyService` sin tocar la interfaz.

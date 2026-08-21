@@ -76,6 +76,16 @@ describe("ingesta de lecturas", () => {
     expect(result.state).toBe("ANOMALY");
     expect(result.activeAlerts.map((a) => a.type)).toContain("SENSOR_INCONSISTENCY");
   });
+
+  it("devuelve el riesgo de desabastecimiento junto con la lectura", async () => {
+    const enRiesgo = await service.ingestReading(payload(false, false));
+    expect(enRiesgo.supply.risk).toBe("CRITICAL");
+    expect(enRiesgo.supply.action).not.toBe("");
+
+    const seguro = await service.ingestReading(payload(true, true));
+    expect(seguro.supply.risk).toBe("SECURE");
+    expect(seguro.supply.trend).toBe("RISING");
+  });
 });
 
 describe("emision en tiempo real", () => {
@@ -89,7 +99,7 @@ describe("emision en tiempo real", () => {
     const readingEvents = received.filter((e) => e.event === "reading");
     expect(readingEvents).toHaveLength(1);
     expect(readingEvents[0].data).toMatchObject({
-      state: { state: "FULL", label: "TANQUE LLENO" },
+      state: { state: "FULL", label: "RESERVA COMPLETA" },
       reading: { low: true, high: true },
     });
   });
@@ -107,10 +117,13 @@ describe("estado de comunicacion", () => {
     await service.ingestReading(payload(true, true));
 
     const future = new Date(Date.now() + 120_000);
-    const { device, activeAlerts } = await service.refreshDeviceStatus(future);
+    const { device, supply, activeAlerts } = await service.refreshDeviceStatus(future);
 
     expect(device.status).toBe("OFFLINE");
     expect(activeAlerts.map((a) => a.type)).toContain("DEVICE_OFFLINE");
+    // Aunque la ultima lectura fuese "reserva completa", sin supervision el
+    // riesgo deja de poder afirmarse.
+    expect(supply.risk).toBe("UNKNOWN");
   });
 
   it("cierra la alerta de offline cuando el dispositivo reaparece", async () => {
@@ -156,6 +169,7 @@ describe("vista agregada", () => {
     expect(overview.latestReading?.low).toBe(false);
     expect(overview.device.deviceId).toBe(DEVICE_ID);
     expect(overview.activeAlerts.map((a) => a.type)).toContain("LOW_LEVEL");
+    expect(overview.supply.risk).toBe("CRITICAL");
     expect(typeof overview.serverTime).toBe("string");
   });
 });

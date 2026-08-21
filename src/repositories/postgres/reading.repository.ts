@@ -1,4 +1,5 @@
 import { query, queryOne } from "@/database/pool";
+import type { TankState } from "@/domain/tank-state";
 import type { ReadingRepository } from "@/repositories/types";
 import { type ReadingRow, toReading } from "./mappers";
 
@@ -66,5 +67,27 @@ export const postgresReadingRepository: ReadingRepository = {
       [tankId, state],
     );
     return row?.started_at ?? null;
+  },
+
+  async findPreviousDistinctState(tankId, state) {
+    const row = await queryOne<{ state: string }>(
+      `SELECT state FROM tank_readings
+        WHERE tank_id = $1 AND state <> $2
+        ORDER BY timestamp DESC, id DESC
+        LIMIT 1`,
+      [tankId, state],
+    );
+    return (row?.state as TankState) ?? null;
+  },
+
+  async findLastOccurrence(tankId, state) {
+    const row = await queryOne<{ timestamp: Date }>(
+      `SELECT timestamp FROM tank_readings
+        WHERE tank_id = $1 AND state = $2
+        ORDER BY timestamp DESC, id DESC
+        LIMIT 1`,
+      [tankId, state],
+    );
+    return row?.timestamp ?? null;
   },
 };

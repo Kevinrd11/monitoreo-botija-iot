@@ -15,12 +15,12 @@ import { cn } from "@/lib/utils";
 import type { ReadingDTO } from "@/types";
 import { STATE_TONE, TONE } from "./tone";
 
-/** Tabla de diagnostico: Hora | LOW | HIGH | Estado. */
+/** Tabla de diagnostico de la reserva: Hora | LOW | HIGH | Estado. */
 export function ReadingsTable({ readings }: { readings: ReadingDTO[] }) {
   if (readings.length === 0) {
     return (
       <p className="py-10 text-center text-sm text-muted-foreground">
-        No hay lecturas en este rango.
+        No hay lecturas de la reserva en este rango.
       </p>
     );
   }
@@ -33,7 +33,7 @@ export function ReadingsTable({ readings }: { readings: ReadingDTO[] }) {
             <TableHead className="w-[190px]">Hora</TableHead>
             <TableHead className="w-[90px]">LOW</TableHead>
             <TableHead className="w-[90px]">HIGH</TableHead>
-            <TableHead>Estado</TableHead>
+            <TableHead>Estado de la reserva</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

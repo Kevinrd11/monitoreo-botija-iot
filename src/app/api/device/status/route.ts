@@ -11,7 +11,7 @@ export const runtime = "nodejs";
  */
 export async function GET() {
   return handle(async () => {
-    const { device, activeAlerts } = await getTankService().refreshDeviceStatus();
-    return ok({ device, activeAlerts });
+    const { device, supply, activeAlerts } = await getTankService().refreshDeviceStatus();
+    return ok({ device, supply, activeAlerts });
   });
 }

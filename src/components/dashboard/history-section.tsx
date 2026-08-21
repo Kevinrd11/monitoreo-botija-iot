@@ -13,7 +13,7 @@ import { ReadingsTable } from "./readings-table";
 
 const RANGES: HistoryRange[] = ["1h", "6h", "24h", "7d"];
 
-/** Historial: grafico escalonado de estados y tabla de lecturas de sensores. */
+/** Historial de la reserva: grafico escalonado y tabla de lecturas de sensores. */
 export function HistorySection({ version }: { version: number }) {
   const [range, setRange] = useState<HistoryRange>("1h");
   const { readings, loading } = useTankHistory(range, version);
@@ -23,7 +23,7 @@ export function HistorySection({ version }: { version: number }) {
       <CardHeader className="flex flex-col gap-3 border-b border-border/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <CardTitle className="flex items-center gap-2 text-sm font-semibold tracking-[0.14em]">
           <History className="size-4 text-muted-foreground" />
-          HISTORIAL
+          HISTORIAL DE LA RESERVA
           <span className="font-mono text-[11px] font-normal tracking-normal text-muted-foreground">
             {loading ? "cargando..." : `${readings.length} lecturas`}
           </span>
@@ -55,7 +55,7 @@ export function HistorySection({ version }: { version: number }) {
             <TabsList>
               <TabsTrigger value="chart" className="gap-1.5 text-xs">
                 <BarChart3 className="size-3.5" />
-                Evolucion de estados
+                Evolución de la reserva
               </TabsTrigger>
               <TabsTrigger value="table" className="gap-1.5 text-xs">
                 <TableIcon className="size-3.5" />

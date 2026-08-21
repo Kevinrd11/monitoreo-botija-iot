@@ -40,25 +40,42 @@ describe("TankStateService.isAnomaly", () => {
 });
 
 describe("metadatos de estado", () => {
-  it("FULL significa 'tanque lleno', nunca sobrellenado", () => {
+  it("FULL significa reserva completa, nunca sobrellenado", () => {
     const meta = TANK_STATE_META.FULL;
-    expect(meta.label).toBe("TANQUE LLENO");
+    expect(meta.label).toBe("RESERVA COMPLETA");
     expect(meta.message.toLowerCase()).not.toContain("sobrellen");
     expect(meta.fillRatio).toBe(1);
+    // Sin riesgo: no hay nada que hacer.
+    expect(meta.action).toBe("");
   });
 
-  it("ANOMALY no se presenta como tanque lleno", () => {
+  it("ANOMALY no se presenta como reserva disponible", () => {
     const meta = TANK_STATE_META.ANOMALY;
-    expect(meta.label).toBe("ANOMALIA DE SENSOR");
+    expect(meta.label).toBe("FALLO DE SENSORES");
     expect(meta.message).toContain("inconsistente");
+    expect(meta.action).not.toBe("");
+  });
+
+  it("los estados de riesgo indican que hacer", () => {
+    expect(TANK_STATE_META.LOW.action).not.toBe("");
+    expect(TANK_STATE_META.MEDIUM.action).not.toBe("");
+  });
+
+  it("ningun mensaje promete autonomia restante", () => {
+    // Dos sensores digitales no permiten estimar cuanto tiempo queda de agua.
+    for (const state of TANK_STATES) {
+      const meta = TANK_STATE_META[state];
+      const texto = `${meta.message} ${meta.action}`.toLowerCase();
+      expect(texto).not.toMatch(/horas restantes|autonom|litros|caudal|%/);
+    }
   });
 
   it("el snapshot expone solo datos serializables", () => {
     const snapshot = TankStateService.snapshotFromSensors(true, false);
     expect(snapshot).toMatchObject({
       state: "MEDIUM",
-      label: "NIVEL MEDIO",
-      shortLabel: "MEDIO",
+      label: "RESERVA PARCIAL",
+      shortLabel: "PARCIAL",
     });
     expect(JSON.parse(JSON.stringify(snapshot))).toEqual(snapshot);
   });
